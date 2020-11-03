@@ -118,8 +118,10 @@ def _build_time_mappings(time_mappings):
         for region, (time_start, time_step_size, timesteps) in time_mappings.items()}
 
 
-def cornet_z_brainmodel():
-    return CORnetCommitment(identifier='CORnet-Z', activations_model=cornet('CORnet-Z'),
+def cornet_z_brainmodel(*args, **kwargs):
+    kwargs.setdefault('identifier', 'CORnet-Z')
+    return CORnetCommitment(*args,
+                            activations_model=cornet('CORnet-Z'),
                             layers=[f'{region}.output-t0' for region in ['V1', 'V2', 'V4', 'IT']] +
                                    ['decoder.avgpool-t0'],
                             time_mapping={
@@ -127,7 +129,8 @@ def cornet_z_brainmodel():
                                 'V2': {0: (70, 170)},
                                 'V4': {0: (90, 190)},
                                 'IT': {0: (100, 200)},
-                            })
+                            },
+                            **kwargs)
 
 
 def cornet_s_brainmodel():
