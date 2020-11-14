@@ -30,13 +30,14 @@ class CORnetCommitment(ModelCommitment):
     time-bin for the model.
     """
 
-    def __init__(self, *args, time_mapping: Dict[str, Dict[int, Tuple[int, int]]], **kwargs):
+    def __init__(self, *args, time_mapping: Dict[str, Dict[int, Tuple[int, int]]], layers, **kwargs):
         """
         :param time_mapping: mapping from region -> {model_timestep -> (time_bin_start, time_bin_end)}
         """
-        super(CORnetCommitment, self).__init__(*args, **kwargs)
+        kwargs.setdefault('region_layer_map', {target: [layer for layer in layers if layer.startswith(target)]
+                                               for target in ['V1', 'V2', 'V4', 'IT']})
+        super(CORnetCommitment, self).__init__(*args, layers=layers, **kwargs)
         self.time_mapping = time_mapping
-        self.recording_layers = None
         self.recording_time_bins = None
         # deal with activations_model returning a time_bin
         for key, executor in self.behavior_model.mapping.items():
@@ -44,7 +45,6 @@ class CORnetCommitment(ModelCommitment):
 
     def start_recording(self, recording_target, time_bins):
         self.recording_target = recording_target
-        self.recording_layers = [layer for layer in self.layers if layer.startswith(recording_target)]
         self.recording_time_bins = time_bins
 
     def look_at(self, stimuli, number_of_trials=1):
@@ -56,7 +56,8 @@ class CORnetCommitment(ModelCommitment):
 
     @store(identifier_ignore=['stimuli'])
     def look_at_cached(self, model_identifier, stimuli_identifier, stimuli):
-        responses = self.activations_model(stimuli, layers=self.recording_layers)
+        layer = self.layer_model.region_layer_map[self.recording_target]
+        responses = self.activations_model(stimuli, layers=[layer])
         # map time
         if hasattr(self, 'recording_target'):
             regions = set([self.recording_target])
