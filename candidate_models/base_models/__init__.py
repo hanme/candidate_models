@@ -366,6 +366,10 @@ def convrnn():
 
 
 def unsupervised_vvs_model(identifier):
+    # reset graph (especially important when model is reloaded or multiple models are created)
+    import tensorflow as tf
+    tf.compat.v1.reset_default_graph()
+    # build model
     from candidate_models.base_models.unsupervised_vvs import ModelBuilder
     build = ModelBuilder()
     return build(identifier)
