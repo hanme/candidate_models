@@ -1,14 +1,15 @@
-import logging
-import sys
 from collections import OrderedDict
 
 import argparse
 import fire
+import logging
+import sys
 
-from candidate_models import get_activations
-from candidate_models.model_commitments import brain_translated_pool
-from candidate_models.model_commitments.model_layer_def import model_layers_pool
 from brainscore import score_model as score_model_function
+from candidate_models import get_activations
+from candidate_models.base_models import base_model_pool
+from candidate_models.model_commitments import brain_translated_pool
+from candidate_models.model_commitments.model_layer_def import model_layers
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +26,10 @@ def activations(model, stimulus_set, layers=None):
     logger.info(f"Retrieving activations for {model} layers {layers} on stimulus set {stimulus_set} with args {args}")
     if isinstance(layers, str):
         layers = [layers]
-    model_layers = model_layers_pool[model]
-    model, default_layers = model_layers['model'], model_layers['layers']
+    model_implementation = base_model_pool[model]
+    default_layers = model_layers[model]
     layers = layers or default_layers
-    result = get_activations(model, layers=layers, stimulus_set=stimulus_set)
+    result = get_activations(model_implementation, layers=layers, stimulus_set=stimulus_set)
     print(result)
 
 
