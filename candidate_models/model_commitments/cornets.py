@@ -134,16 +134,19 @@ def cornet_z_brainmodel(*args, **kwargs):
                             **kwargs)
 
 
-def cornet_s_brainmodel():
+def cornet_s_brainmodel(*args, **kwargs):
     # map region -> (time_start, time_step_size, timesteps)
     time_mappings = CORNET_S_TIMEMAPPING
-    return CORnetCommitment(identifier='CORnet-S', activations_model=cornet('CORnet-S'),
+    kwargs.setdefault('identifier', 'CORnet-S')
+    return CORnetCommitment(*args,
+                            activations_model=cornet('CORnet-S'),
                             layers=['V1.output-t0'] +
                                    [f'{area}.output-t{timestep}'
                                     for area, timesteps in [('V2', range(2)), ('V4', range(4)), ('IT', range(2))]
                                     for timestep in timesteps] +
                                    ['decoder.avgpool-t0'],
-                            time_mapping=_build_time_mappings(time_mappings))
+                            time_mapping=_build_time_mappings(time_mappings),
+                            **kwargs)
 
 
 def cornet_s222_brainmodel():
