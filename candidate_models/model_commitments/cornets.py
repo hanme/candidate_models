@@ -65,8 +65,9 @@ class CORnetCommitment(ModelCommitment):
         return self.look_at_temporal(stimuli=stimuli)
 
     def look_at_temporal(self, stimuli):
-        layer = self.layer_model.region_layer_map[self.recording_target]
-        responses = self.activations_model(stimuli, layers=[layer])
+        recording_layer = self.layer_model.region_layer_map[self.recording_target]
+        recording_layers = [layer for layer in self.layers if layer.startswith(recording_layer)]
+        responses = self.activations_model(stimuli, layers=recording_layers)
         # map time
         if hasattr(self, 'recording_target'):
             regions = set([self.recording_target])
