@@ -1,4 +1,3 @@
-import functools
 import logging
 import numpy as np
 from torch import nn
@@ -11,7 +10,6 @@ from brainscore.utils import LazyLoad
 from candidate_models.base_models import cornet
 from model_tools.brain_transformation import ModelCommitment
 from model_tools.brain_transformation.temporal import fix_timebin_naming
-from result_caching import store
 
 _logger = logging.getLogger(__name__)
 
@@ -52,17 +50,7 @@ class CORnetCommitment(ModelCommitment):
         if self.do_behavior:
             return super(CORnetCommitment, self).look_at(stimuli, number_of_trials=number_of_trials)
         else:
-            if hasattr(stimuli, 'identifier') and stimuli.identifier is not None and stimuli.identifier is not False:
-                # cache, since piecing times together is not too fast unfortunately
-                look_at_fnc = functools.partial(self.look_at_temporal_cached,
-                                                model_identifier=self.identifier, stimuli_identifier=stimuli.identifier)
-            else:
-                look_at_fnc = self.look_at_temporal
-            return look_at_fnc(stimuli=stimuli)  # ignore number_of_trials
-
-    @store(identifier_ignore=['stimuli'])
-    def look_at_temporal_cached(self, model_identifier, stimuli_identifier, stimuli):
-        return self.look_at_temporal(stimuli=stimuli)
+            return self.look_at_temporal(stimuli=stimuli)  # ignore number_of_trials
 
     def look_at_temporal(self, stimuli):
         recording_layer = self.layer_model.region_layer_map[self.recording_target]
