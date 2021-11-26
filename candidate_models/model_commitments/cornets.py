@@ -40,8 +40,8 @@ class CORnetCommitment(ModelCommitment):
         """
         :param time_mapping: mapping from region -> {model_timestep -> (time_bin_start, time_bin_end)}
         """
-        super(CORnetCommitment, self).__init__(*args, layers=layers, **kwargs)
         self.time_mapping = time_mapping
+        super(CORnetCommitment, self).__init__(*args, layers=layers, **kwargs)
         # deal with activations_model returning a time_bin
         for key, executor in self.behavior_model.mapping.items():
             executor.activations_model = TemporalIgnore(executor.activations_model)
