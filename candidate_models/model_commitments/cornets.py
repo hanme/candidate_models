@@ -29,18 +29,16 @@ class CORnetCommitment(ModelCommitment):
     time-bin for the model.
     """
 
-    def create_neural_layer_model(self, identifier, activations_model, layers, region_layer_map):
-        return CORnetLayerModel(identifier=identifier,
-                                activations_model=activations_model,
-                                layers=layers,
-                                region_layer_map=region_layer_map,
-                                time_mapping=self.time_mapping)
+    def create_neural_layer_model(self, *args, **kwargs):
+        return CORnetLayerModel(*args, **kwargs, time_mapping=self.time_mapping)
 
     def __init__(self, *args, time_mapping: Dict[str, Dict[int, Tuple[int, int]]], layers, **kwargs):
         """
         :param time_mapping: mapping from region -> {model_timestep -> (time_bin_start, time_bin_end)}
         """
         self.time_mapping = time_mapping
+        kwargs.setdefault('region_layer_map', {target: [layer for layer in layers if layer.startswith(target)]
+                                               for target in ['V1', 'V2', 'V4', 'IT']})
         super(CORnetCommitment, self).__init__(*args, layers=layers, **kwargs)
         # deal with activations_model returning a time_bin
         for key, executor in self.behavior_model.mapping.items():
@@ -52,8 +50,6 @@ class CORnetLayerModel(LayerMappedModel):
         """
         :param time_mapping: mapping from region -> {model_timestep -> (time_bin_start, time_bin_end)}
         """
-        kwargs.setdefault('region_layer_map', {target: [layer for layer in layers if layer.startswith(target)]
-                                               for target in ['V1', 'V2', 'V4', 'IT']})
         super(CORnetLayerModel, self).__init__(*args, **kwargs)
         self.layers = layers
         self.recording_target = None
@@ -65,8 +61,7 @@ class CORnetLayerModel(LayerMappedModel):
         self.recording_time_bins = time_bins
 
     def look_at(self, stimuli, number_of_trials=1):  # ignore number_of_trials
-        recording_layer = self.region_layer_map[self.recording_target]
-        recording_layers = [layer for layer in self.layers if layer.startswith(recording_layer)]
+        recording_layers = self.region_layer_map[self.recording_target]
         responses = self.activations_model(stimuli, layers=recording_layers)
         # map time
         if hasattr(self, 'recording_target'):
