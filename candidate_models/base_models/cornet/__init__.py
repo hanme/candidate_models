@@ -122,8 +122,9 @@ class TemporalExtractor(ActivationsExtractorHelper):
     # `from_paths` is the earliest method at which we can interject because calls below are stored and checked for the
     # presence of all layers which, for CORnet, are passed as e.g. `IT.output-t0`.
     # This code re-arranges the time component.
-    def from_paths(self, *args, **kwargs):
-        raw_activations = super(TemporalExtractor, self).from_paths(*args, **kwargs)
+    def from_paths(self, *args, layers, **kwargs):
+        layers = [layer if layer != 'logits' else 'logits-t0' for layer in layers]
+        raw_activations = super(TemporalExtractor, self).from_paths(*args, layers=layers, **kwargs)
         # introduce time dimension
         regions = defaultdict(list)
         for layer in set(raw_activations['layer'].values):
